@@ -10,7 +10,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Sombreros">
     <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="https://img.icons8.com/ios-filled/180/ffffff/top-hat.png">
+    <link rel="apple-touch-icon" href="httpsa://img.icons8.com/ios-filled/180/ffffff/top-hat.png">
     
     <style>
         /* Estilos generales */
@@ -141,7 +141,8 @@
         .visualization-container {
             margin-top: 30px;
             display: flex;
-            justify-content: center;
+            /* CORRECCIÓN: Alinear al inicio para el scroll */
+            justify-content: flex-start; 
             align-items: center;
             min-height: 200px;
             background-color: #e2e8f0;
@@ -551,8 +552,8 @@
 
             if (currentStep > 1) {
                 state.currentStep--; 
-                 if (currentStep === 11) state.currentStep = 6; // De 3D (12) a inicio de Copa (6)
-                else if (currentStep === 5) state.currentStep = 1; // De Copa (6) a inicio de Ala (1)
+                 if (currentStep === 12) state.currentStep = 6; // De 3D (12) a inicio de Copa (6)
+                else if (currentStep === 6) state.currentStep = 1; // De Copa (6) a inicio de Ala (1)
                 
                 showStep(state.currentStep);
             } else {
@@ -775,7 +776,9 @@
             const rectH = h1 * scaleFactor;
             const triH = h2 * scaleFactor;
             
-            const rectX = (canvasW - rectW) / 2;
+            // --- CORRECCIÓN 1: Anclaje de X (rectX) ---
+            // Dejar espacio a la izquierda para las etiquetas
+            const rectX = paddingH;
             const rectY = paddingTop + triH; 
             
             if (step >= 6) {
@@ -801,24 +804,24 @@
                     ctxRect.stroke();
                 }
                 
+                // --- CORRECCIÓN 1: Posición de la etiqueta h2 ---
                 ctxRect.fillStyle = '#333';
                 ctxRect.font = '14px Arial';
                 ctxRect.textAlign = 'right';
                 ctxRect.textBaseline = 'middle';
-                // --- CORREGIDO: Posición de la etiqueta h2 ---
                 ctxRect.fillText(`h2 = ${h2} cm`, rectX - 10, rectY - (triH / 2)); 
                 
                 ctxRect.strokeStyle = '#d946ef';
                 ctxRect.lineWidth = 1;
                 ctxRect.setLineDash([2, 2]);
                 ctxRect.beginPath();
-                ctxRect.moveTo(rectX, rectY - triH);
-                ctxRect.lineTo(rectX, rectY);
+                ctxRect.moveTo(rectX - 5, rectY - triH);
+                ctxRect.lineTo(rectX - 5, rectY);
                 ctxRect.stroke();
                 ctxRect.setLineDash([]);
             }
 
-            // --- CORREGIDO: Posición de texto ARRIBA ---
+            // --- CORRECCIÓN 1: Posición de texto ARRIBA ---
             const textY1 = 20;
             const textY2 = 45;
 
@@ -854,10 +857,9 @@
             ctxRect.textAlign = 'center';
             ctxRect.textBaseline = 'middle';
             
-            // --- CORREGIDO: Posición de texto Base (más abajo) ---
-            ctxRect.fillText(`Base = ${formatNumber(perimetroInt)} cm`, rectangleCanvas.width / 2, rectY + rectH + 15);
+            ctxRect.fillText(`Base = ${formatNumber(perimetroInt)} cm`, rectX + (rectW/2), rectY + rectH + 15);
             
-            // --- CORREGIDO: Posición de h1 a la izquierda ---
+            // --- CORRECCIÓN 1: Posición de h1 a la izquierda ---
             ctxRect.textAlign = 'right';
             ctxRect.fillText(`h1 = ${h1} cm`, rectX - 10, rectY + (rectH / 2));
             
@@ -865,8 +867,8 @@
             ctxRect.lineWidth = 1;
             ctxRect.setLineDash([2, 2]);
             ctxRect.beginPath();
-            ctxRect.moveTo(rectX, rectY);
-            ctxRect.lineTo(rectX, rectY + rectH);
+            ctxRect.moveTo(rectX - 5, rectY);
+            ctxRect.lineTo(rectX - 5, rectY + rectH);
             ctxRect.stroke();
             ctxRect.setLineDash([]);
         }
@@ -949,11 +951,13 @@
             // 5. Etiquetas de Radios (CORREGIDAS)
             ctx3D.fillStyle = '#FFFFFF'; // --- Texto blanco ---
             ctx3D.font = 'bold 12px Arial';
-            ctx3D.textAlign = 'center'; // --- Centrado ---
+            ctx3D.textAlign = 'center'; 
             
             // R Ext (sobre la parte derecha del ala)
-            ctx3D.fillText(`R Ext: ${rExt}`, centerX + rExt3D * 0.7, centerY + (rExt3D * perspective * 0.1));
-            // R Int (sobre la parte izquierda del hueco)
+            ctx3D.fillText(`R Ext: ${rExt}`, centerX + rExt3D * 0.7, centerY + (rExt3D * perspective * 0.1)); 
+            
+            // R Int (sobre la parte izquierda del ala, pero dentro del hueco)
+            ctx3D.fillStyle = '#333'; // Texto oscuro para el hueco claro
             ctx3D.fillText(`R Int: ${rInt}`, centerX - rInt3D * 0.5, centerY + (rInt3D * perspective * 0.1));
         }
 
