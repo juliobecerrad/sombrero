@@ -1,0 +1,21 @@
+{
+  "name": "Calculadora de Sombreros",
+  "short_name": "Sombreros",
+  "description": "Calculadora interactiva para material de sombreros.",
+  "start_url": "sombrero.html",
+  "display": "standalone",
+  "background_color": "#f0f4f8",
+  "theme_color": "#1e3a8a",
+  "icons": [
+    {
+      "src": "https://img.icons8.com/ios-filled/192/ffffff/top-hat.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "https://img.icons8.com/ios-filled/512/ffffff/top-hat.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}

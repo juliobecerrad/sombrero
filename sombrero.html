@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Sombreros</title>
+    
+    <meta name="theme-color" content="#1e3a8a"/>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Sombreros">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="https://img.icons8.com/ios-filled/180/ffffff/top-hat.png">
+    
+    <style>
+        /* Estilos generales */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f0f4f8;
+            color: #333;
+            display: grid;
+            place-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow: hidden;
+            text-align: center;
+        }
+
+        h1 {
+            color: #1e3a8a;
+            margin-top: 0;
+            margin-bottom: 24px;
+            font-size: 1.6rem;
+        }
+
+        p {
+            margin-bottom: 10px;
+        }
+
+        /* --- Vistas de la App --- */
+        #input-view { display: block; }
+        #app-view { display: none; position: relative; }
+        #part1-view, #part2-view, #part3-view { display: none; } /* Ocultos por defecto */
+        
+        #back_button {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            font-size: 1.8rem;
+            line-height: 1;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #64748b; 
+            padding: 5px;
+            z-index: 100;
+            transition: color 0.2s;
+        }
+        #back_button:hover {
+            color: #1e3a8a;
+        }
+        
+        #app-view h1 {
+            padding-left: 40px;
+            padding-right: 40px;
+        }
+        
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .input-group label {
+            font-weight: 600;
+            color: #333;
+            flex-basis: 150px;
+            text-align: right;
+        }
+        input[type="number"] {
+            width: 100px;
+            padding: 10px;
+            border: 1px solid #b0bec5;
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+            color: #1a202c;
+            text-align: center;
+        }
+        input[type="number"]:focus {
+            border-color: #1e3a8a;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(30, 58, 138, 0.2);
+        }
+
+        #error-message {
+            color: #c62828;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 15px;
+            min-height: 20px;
+            display: none;
+        }
+
+        button {
+            background-color: #1e3a8a;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.1s;
+            margin-top: 10px;
+        }
+        button:hover { background-color: #1e40af; }
+        button:active { transform: translateY(1px); }
+        button:disabled {
+            background-color: #94a3b8;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        /* --- Contenedor de Visualización --- */
+        .visualization-container {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 200px;
+            background-color: #e2e8f0;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .visualization-container canvas {
+            background-color: transparent;
+        }
+        
+        #visualization-info {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+
+        /* --- Sección de Resultados (Texto) --- */
+        .results-section {
+            margin-top: 25px;
+            text-align: left;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 20px;
+        }
+        .results-section h2 {
+            color: #1e3a8a;
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .result-block {
+            background-color: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            display: none; 
+            animation: fadeIn 0.5s;
+        }
+        .result-block h3 {
+            color: #1e3a8a;
+            font-size: 1.1rem;
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+        .formula {
+            font-family: 'Courier New', Courier, monospace;
+            font-style: italic;
+            color: #64748b;
+            margin-bottom: 8px;
+        }
+        .calculation {
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+            color: #1a202c;
+            font-size: 1.05rem;
+        }
+        .total-area {
+            background-color: #dcfce7;
+            border-color: #86efac;
+            font-size: 1.15rem;
+            font-weight: bold;
+            color: #166534;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            text-align: center;
+            display: none; 
+            animation: fadeIn 0.5s;
+        }
+        
+        /* --- Botón Flotante (FAB) --- */
+        #fab-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: none; 
+        }
+        
+        #fab-next {
+            width: 56px;
+            height: 56px;
+            background-color: #1e3a8a;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            line-height: 1;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        #fab-next:hover {
+            background-color: #1e40af;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @media (max-width: 400px) {
+            .input-group label {
+                flex-basis: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+    
+        <div id="input-view">
+            <h1>Diseño de Sombrero</h1>
+            <p>Introduce las medidas en centímetros (cm).</p>
+            
+            <div class="input-group">
+                <label for="radioExterno">Radio Externo (Ala):</label>
+                <input type="number" id="radioExterno" placeholder="Ej: 15" min="1">
+            </div>
+    
+            <div class="input-group">
+                <label for="radioInterno">Radio Interno (Cabeza):</label>
+                <input type="number" id="radioInterno" placeholder="Ej: 8" min="0.1">
+            </div>
+
+            <div class="input-group">
+                <label for="alturaH1">Altura Rectángulo (h1):</label>
+                <input type="number" id="alturaH1" placeholder="Ej: 10" min="1">
+            </div>
+
+            <div class="input-group">
+                <label for="alturaH2">Altura Triángulo (h2):</label>
+                <input type="number" id="alturaH2" placeholder="Ej: 5" min="1">
+            </div>
+    
+            <div id="error-message"></div>
+    
+            <button id="startButton">Dibujar Sombrero</button>
+        </div>
+
+        <div id="app-view">
+            <button id="back_button">⬅️</button>
+
+            <div id="part1-view">
+                <h1 id="part1-title">Parte 1: Ala del Sombrero (2D)</h1>
+                <div class="visualization-container">
+                    <canvas id="hatCanvas" width="400" height="300"></canvas> 
+                </div>
+                <p id="visualization-info-1">Cálculos del Ala.</p>
+        
+                <div id="calculation-results-1" class="results-section">
+                    <div id="outer-circle-calcs" class="result-block">
+                        <h3>Círculo Exterior (Ala)</h3>
+                        <p class="formula">Área = π * r²</p>
+                        <p class="calculation">Área = π * (<span id="re_area_val"></span>)² = <span id="area_externa"></span> cm²</p>
+                        <p class="formula">Perímetro = 2 * π * r</p>
+                        <p class="calculation">Perímetro = 2 * π * <span id="re_perimetro_val"></span> = <span id="perimetro_externo"></span> cm</p>
+                    </div>
+                    <div id="inner-circle-calcs" class="result-block">
+                        <h3>Círculo Interior (Hueco)</h3>
+                        <p class="formula">Área = π * r²</p>
+                        <p class="calculation">Área = π * (<span id="ri_area_val"></span>)² = <span id="area_interna"></span> cm²</p>
+                        <p class="formula">Perímetro = 2 * π * r</p>
+                        <p class="calculation">Perímetro = 2 * π * <span id="ri_perimetro_val"></span> = <span id="perimetro_interno"></span> cm</p>
+                    </div>
+                    <div id="net-area-ala" class="total-area">
+                        Área Neta del Ala = <span id="area_neta_ala"></span> cm²
+                    </div>
+                </div>
+            </div>
+
+            <div id="part2-view">
+                <h1 id="part2-title">Parte 2: Copa del Sombrero (2D)</h1>
+                <div class="visualization-container">
+                    <canvas id="rectangleCanvas" width="400" height="350"></canvas> 
+                </div>
+                <p id="visualization-info-2">Cálculos de la Copa.</p>
+                <div id="calculation-results-2" class="results-section">
+                    <div id="rect-calcs" class="result-block">
+                        <h3>Rectángulo (Copa)</h3>
+                        <p class="formula">Base = Perímetro del Hueco</p>
+                        <p class="calculation">Base = <span id="rect_base_val"></span> cm</p>
+                        <p class="formula">Altura = h1</p>
+                        <p class="calculation">Altura = <span id="rect_altura_val"></span> cm</p>
+                        <p class="formula">Área = Base * Altura</p>
+                        <p class="calculation">Área = <span id="rect_base_area_val"></span> * <span id="rect_altura_area_val"></span> = <span id="area_rectangulo"></span> cm²</p>
+                    </div>
+                    
+                    <div id="triangle-calcs" class="result-block">
+                        <h3>Triángulos de la Copa (x4)</h3>
+                        <p class="formula">Base (por triángulo) = Base Total / 4</p>
+                        <p class="calculation">Base = <span id="tri_base_val"></span> cm</p>
+                        <p class="formula">Altura = h2</p>
+                        <p class="calculation">Altura = <span id="tri_altura_val"></span> cm</p>
+                        <p class="formula">Área (1 Triángulo) = (Base * Altura) / 2</p>
+                        <p class="calculation">Área (1) = <span id="area_triangulo_single"></span> cm²</p>
+                        <p class="formula">Área Total (4 Triángulos) = Área (1) * 4</p>
+                        <p class="calculation">Área Total = <span id="area_triangulo_total"></span> cm²</p>
+                    </div>
+
+                    <div id="total-material-calcs" class="total-area">
+                        Área TOTAL Sombrero = <span id="area_total_sombrero_part2"></span> cm²
+                    </div>
+                </div>
+            </div>
+
+            <div id="part3-view">
+                <h1 id="part3-title">Parte 3: Sombrero Completo (3D)</h1>
+                <div class="visualization-container">
+                    <canvas id="hat3DCanvas" width="400" height="350"></canvas>
+                </div>
+                <p id="visualization-info-3">Visualización y resumen de dimensiones.</p>
+                <div id="final-summary" class="results-section">
+                    <div class="total-area">
+                        Área TOTAL de Material = <span id="area_total_sombrero_final"></span> cm²
+                    </div>
+                    <div class="result-block" style="display: block;"> <h3>Dimensiones Clave</h3>
+                        <p><strong>Radio Externo (Ala):</strong> <span id="final_rext"></span> cm</p>
+                        <p><strong>Radio Interno (Cabeza):</strong> <span id="final_rint"></span> cm</p>
+                        <p><strong>Altura Rectángulo (h1):</strong> <span id="final_h1"></span> cm</p>
+                        <p><strong>Altura Triángulo (h2):</strong> <span id="final_h2"></span> cm</p>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+        
+    </div>
+    
+    <div id="fab-container">
+        <button id="fab-next">➡️</button>
+    </div>
+
+    <script>
+        // --- Vistas ---
+        const inputView = document.getElementById('input-view');
+        const appView = document.getElementById('app-view');
+        const part1View = document.getElementById('part1-view');
+        const part2View = document.getElementById('part2-view');
+        const part3View = document.getElementById('part3-view');
+
+        // --- Botones ---
+        const startButton = document.getElementById('startButton');
+        const backButton = document.getElementById('back_button');
+        const fabContainer = document.getElementById('fab-container');
+        const fabNext = document.getElementById('fab-next');
+        
+        // --- Inputs ---
+        const radioExternoInput = document.getElementById('radioExterno');
+        const radioInternoInput = document.getElementById('radioInterno');
+        const alturaH1Input = document.getElementById('alturaH1');
+        const alturaH2Input = document.getElementById('alturaH2');
+        const errorMessage = document.getElementById('error-message');
+
+        // --- Canvas y Contextos ---
+        const hatCanvas = document.getElementById('hatCanvas');
+        const ctxDonut = hatCanvas.getContext('2d');
+        const rectangleCanvas = document.getElementById('rectangleCanvas');
+        const ctxRect = rectangleCanvas.getContext('2d');
+        const hat3DCanvas = document.getElementById('hat3DCanvas');
+        const ctx3D = hat3DCanvas.getContext('2d');
+        
+        // --- Spans de Info ---
+        const visualizationInfo1 = document.getElementById('visualization-info-1');
+        const visualizationInfo2 = document.getElementById('visualization-info-2');
+        const visualizationInfo3 = document.getElementById('visualization-info-3');
+        const finalSummary = document.getElementById('final-summary');
+
+        // --- Spans de Resultados (Parte 1) ---
+        const calculationResults1 = document.getElementById('calculation-results-1');
+        const outerCircleCalcs = document.getElementById('outer-circle-calcs');
+        const innerCircleCalcs = document.getElementById('inner-circle-calcs');
+        const netAreaAla = document.getElementById('net-area-ala');
+        const reAreaVal = document.getElementById('re_area_val');
+        const areaExternaSpan = document.getElementById('area_externa');
+        const rePerimetroVal = document.getElementById('re_perimetro_val');
+        const perimetroExternoSpan = document.getElementById('perimetro_externo');
+        const riAreaVal = document.getElementById('ri_area_val');
+        const areaInternaSpan = document.getElementById('area_interna');
+        const riPerimetroVal = document.getElementById('ri_perimetro_val');
+        const perimetroInternoSpan = document.getElementById('perimetro_interno');
+        const areaNetaAlaSpan = document.getElementById('area_neta_ala');
+        
+        // --- Spans de Resultados (Parte 2) ---
+        const calculationResults2 = document.getElementById('calculation-results-2');
+        const rectCalcs = document.getElementById('rect-calcs');
+        const triangleCalcs = document.getElementById('triangle-calcs');
+        const totalMaterialCalcs = document.getElementById('total-material-calcs');
+        const rectBaseVal = document.getElementById('rect_base_val');
+        const rectAlturaVal = document.getElementById('rect_altura_val');
+        const rectBaseAreaVal = document.getElementById('rect_base_area_val');
+        const rectAlturaAreaVal = document.getElementById('rect_altura_area_val');
+        const areaRectanguloSpan = document.getElementById('area_rectangulo');
+        const triBaseVal = document.getElementById('tri_base_val');
+        const triAlturaVal = document.getElementById('tri_altura_val');
+        const areaTrianguloSingle = document.getElementById('area_triangulo_single');
+        const areaTrianguloTotal = document.getElementById('area_triangulo_total');
+        const areaTotalSombreroPart2 = document.getElementById('area_total_sombrero_part2');
+        
+        // --- Spans de Resultados (Parte 3 - Final) ---
+        const areaTotalSombreroFinal = document.getElementById('area_total_sombrero_final');
+        const finalRext = document.getElementById('final_rext');
+        const finalRint = document.getElementById('final_rint');
+        const finalH1 = document.getElementById('final_h1');
+        const finalH2 = document.getElementById('final_h2');
+
+        // --- Estado Global ---
+        let state = {};
+
+        // --- Event Listeners ---
+        startButton.addEventListener('click', initializeSimulation);
+        backButton.addEventListener('click', resetSimulation);
+        fabNext.addEventListener('click', renderNextStep);
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+        }
+
+        function hideError() {
+            errorMessage.style.display = 'none';
+        }
+
+        function formatNumber(num, fixed = 2) {
+            return num.toFixed(fixed).replace(/\.00$/, '');
+        }
+
+        function initializeSimulation() {
+            hideError();
+
+            const rExt = parseFloat(radioExternoInput.value);
+            const rInt = parseFloat(radioInternoInput.value);
+            const h1 = parseFloat(alturaH1Input.value);
+            const h2 = parseFloat(alturaH2Input.value);
+
+            // Validaciones
+            if (isNaN(rExt) || rExt <= 0) {
+                showError("Por favor, introduce un Radio Externo válido y mayor que cero.");
+                return;
+            }
+            if (isNaN(rInt) || rInt <= 0) {
+                showError("Por favor, introduce un Radio Interno válido y mayor que cero.");
+                return;
+            }
+            if (isNaN(h1) || h1 <= 0) {
+                showError("Por favor, introduce una Altura (h1) válida y mayor que cero.");
+                return;
+            }
+            if (isNaN(h2) || h2 <= 0) { 
+                showError("Por favor, introduce una Altura de Triángulo (h2) válida y mayor que cero.");
+                return;
+            }
+            if (rInt >= rExt) {
+                showError("El Radio Interno debe ser menor que el Radio Externo.");
+                return;
+            }
+            
+            // --- Cálculos Iniciales ---
+            const PI = Math.PI;
+            const areaExt = PI * Math.pow(rExt, 2);
+            const perimetroExt = 2 * PI * rExt;
+            const areaInt = PI * Math.pow(rInt, 2);
+            const perimetroInt = 2 * PI * rInt;
+            const areaNeta = areaExt - areaInt;
+            const areaRect = perimetroInt * h1;
+            const triBase = perimetroInt / 4;
+            const triAreaSingle = (triBase * h2) / 2;
+            const triAreaTotal = triAreaSingle * 4;
+            const areaTotal = areaNeta + areaRect + triAreaTotal;
+
+            // Guardar en el estado
+            state = {
+                rExt, rInt, h1, h2,
+                areaExt, perimetroExt, areaInt, perimetroInt, areaNeta,
+                areaRect, triBase, triAreaSingle, triAreaTotal, areaTotal,
+                currentStep: 1 
+            };
+
+            // Mostrar Vistas
+            inputView.style.display = 'none';
+            appView.style.display = 'block';
+            fabContainer.style.display = 'block';
+
+            showStep(state.currentStep);
+        }
+        
+        function renderNextStep() {
+            if (state.currentStep === 12) { // Si está en el último paso (3D)
+                resetSimulation();
+                return;
+            }
+            state.currentStep++;
+            showStep(state.currentStep);
+        }
+
+        function resetSimulation() {
+            inputView.style.display = 'block';
+            appView.style.display = 'none';
+            fabContainer.style.display = 'none';
+            
+            radioExternoInput.value = '';
+            radioInternoInput.value = '';
+            alturaH1Input.value = ''; 
+            alturaH2Input.value = ''; 
+            
+            hideError();
+            state = {};
+        }
+
+        function showStep(step) {
+            // Ocultar todos los bloques de cálculo y vistas
+            outerCircleCalcs.style.display = 'none';
+            innerCircleCalcs.style.display = 'none';
+            netAreaAla.style.display = 'none';
+            rectCalcs.style.display = 'none';
+            triangleCalcs.style.display = 'none';
+            totalMaterialCalcs.style.display = 'none';
+            finalSummary.style.display = 'none';
+
+            part1View.style.display = 'none';
+            part2View.style.display = 'none';
+            part3View.style.display = 'none';
+            
+            fabNext.innerHTML = '➡️'; // Default
+
+            if (step >= 1 && step <= 5) {
+                // Estamos en la Parte 1 (Dona)
+                part1View.style.display = 'block';
+                
+                drawHatPart1(step); 
+                
+                // Mostrar bloques de texto progresivamente
+                if(step >= 2) outerCircleCalcs.style.display = 'block';
+                if(step >= 4) innerCircleCalcs.style.display = 'block';
+                if(step >= 5) netAreaAla.style.display = 'block';
+                
+                // Actualizar texto de explicación
+                switch(step) {
+                    case 1: visualizationInfo1.textContent = "Paso 1: Dibujamos el círculo exterior del ala."; break;
+                    case 2: visualizationInfo1.textContent = "Paso 2: Calculamos el Área y Perímetro del círculo exterior."; break;
+                    case 3: visualizationInfo1.textContent = "Paso 3: Removemos el círculo interior (hueco)."; break;
+                    case 4: visualizationInfo1.textContent = "Paso 4: Calculamos el Área y Perímetro del hueco."; break;
+                    case 5: visualizationInfo1.textContent = "Paso 5: Calculamos el material neto para el ala."; break;
+                }
+                
+            } else if (step >= 6 && step <= 11) {
+                // Estamos en la Parte 2 (Copa)
+                part2View.style.display = 'block';
+                
+                drawHatPart2(step); 
+                
+                // Mostrar bloques de texto progresivamente
+                if(step >= 7) rectCalcs.style.display = 'block';
+                if(step >= 9) triangleCalcs.style.display = 'block';
+                if(step >= 11) totalMaterialCalcs.style.display = 'block';
+
+                // Actualizar texto de explicación
+                switch(step) {
+                    case 6: visualizationInfo2.textContent = "Paso 6: Dibujamos la plantilla del rectángulo (h1)."; break;
+                    case 7: visualizationInfo2.textContent = "Paso 7: Calculamos el área del rectángulo."; break;
+                    case 8: visualizationInfo2.textContent = "Paso 8: Añadimos los triángulos (h2) a la plantilla."; break;
+                    case 9: visualizationInfo2.textContent = "Paso 9: Calculamos el área de los 4 triángulos."; break;
+                    case 10: visualizationInfo2.textContent = "Paso 10: Mostramos las áreas generales de la copa en el gráfico."; break;
+                    case 11: visualizationInfo2.textContent = "Paso 11: Cálculo final! Esta es el área total del material para el sombrero."; break;
+                }
+            } else if (step === 12) {
+                // Estamos en la Parte 3 (Vista 3D)
+                part3View.style.display = 'block';
+                fabNext.innerHTML = '🎉';
+                
+                drawHat3D();
+                finalSummary.style.display = 'block';
+                
+                visualizationInfo3.textContent = "¡Este es tu sombrero terminado en 3D!";
+            }
+            
+            fillInData();
+        }
+
+        // --- Funciones de Cálculo de Texto ---
+        function fillInData() {
+            const { rExt, rInt, h1, h2, areaExt, perimetroExt, areaInt, perimetroInt, areaNeta, areaRect, triBase, triAreaSingle, triAreaTotal, areaTotal } = state;
+            
+            // Ala
+            reAreaVal.textContent = rExt;
+            areaExternaSpan.textContent = formatNumber(areaExt);
+            rePerimetroVal.textContent = rExt;
+            perimetroExternoSpan.textContent = formatNumber(perimetroExt);
+            riAreaVal.textContent = rInt;
+            areaInternaSpan.textContent = formatNumber(areaInt);
+            riPerimetroVal.textContent = rInt;
+            perimetroInternoSpan.textContent = formatNumber(perimetroInt);
+            areaNetaAlaSpan.textContent = formatNumber(areaNeta);
+            
+            // Copa
+            rectBaseVal.textContent = formatNumber(perimetroInt);
+            rectAlturaVal.textContent = formatNumber(h1);
+            rectBaseAreaVal.textContent = formatNumber(perimetroInt);
+            rectAlturaAreaVal.textContent = formatNumber(h1);
+            areaRectanguloSpan.textContent = formatNumber(areaRect);
+            
+            // Triángulos
+            triBaseVal.textContent = formatNumber(triBase);
+            triAlturaVal.textContent = formatNumber(h2);
+            areaTrianguloSingle.textContent = formatNumber(triAreaSingle);
+            areaTrianguloTotal.textContent = formatNumber(triAreaTotal);
+            
+            // Total (Parte 2 y Parte 3)
+            areaTotalSombreroPart2.textContent = formatNumber(areaTotal);
+            areaTotalSombreroFinal.textContent = formatNumber(areaTotal);
+
+            // Final Summary
+            finalRext.textContent = formatNumber(rExt);
+            finalRint.textContent = formatNumber(rInt);
+            finalH1.textContent = formatNumber(h1);
+            finalH2.textContent = formatNumber(h2);
+        }
+
+        // Función auxiliar para dibujar texto con fondo en canvas
+        function drawTextWithBackground(ctx, text, x, y, bgColor = 'rgba(255, 255, 255, 0.8)', textColor = '#333', textAlign = 'left', font = 'bold 13px Arial') {
+            ctx.font = font;
+            ctx.textAlign = textAlign;
+            const textMetrics = ctx.measureText(text);
+            const textWidth = textMetrics.width;
+            const textHeight = parseInt(font.match(/\d+/)[0], 10) + 2; 
+            
+            let rectX = x;
+            if (textAlign === 'center') rectX = x - textWidth / 2;
+            if (textAlign === 'right') rectX = x - textWidth;
+
+            ctx.fillStyle = bgColor;
+            ctx.fillRect(rectX - 3, y - 2, textWidth + 6, textHeight + 4);
+            ctx.fillStyle = textColor;
+            ctx.fillText(text, x, y);
+        }
+
+        // --- Funciones de Dibujo en Canvas ---
+        
+        function drawHatPart1(step) {
+            const { rExt, rInt, areaExt, perimetroExt, areaInt, perimetroInt, areaNeta } = state;
+            ctxDonut.clearRect(0, 0, hatCanvas.width, hatCanvas.height);
+
+            const centerX = hatCanvas.width / 2;
+            const centerY = hatCanvas.height * 0.6; 
+            const scaleFactor = (hatCanvas.height * 0.3) / rExt; 
+
+            const scaledRExt = rExt * scaleFactor;
+            const scaledRInt = rInt * scaleFactor;
+
+            if (step >= 1) {
+                ctxDonut.beginPath();
+                ctxDonut.arc(centerX, centerY, scaledRExt, 0, 2 * Math.PI);
+                ctxDonut.fillStyle = (step < 3) ? '#4a5568' : '#f0f4f8'; 
+                if (step >= 3) ctxDonut.fillStyle = '#4a5568'; 
+                ctxDonut.fill();
+                ctxDonut.strokeStyle = '#2d3748';
+                ctxDonut.lineWidth = 2;
+                ctxDonut.stroke();
+            }
+
+            if (step >= 3) {
+                ctxDonut.beginPath();
+                ctxDonut.arc(centerX, centerY, scaledRInt, 0, 2 * Math.PI);
+                ctxDonut.fillStyle = '#e2e8f0'; 
+                ctxDonut.fill();
+                ctxDonut.strokeStyle = '#94a3b8';
+                ctxDonut.lineWidth = 1;
+                ctxDonut.stroke();
+            }
+
+            if (step >= 2) {
+                drawTextWithBackground(ctxDonut, `Área Ext. = ${formatNumber(areaExt)} cm²`, 15, 15, 'rgba(220, 252, 231, 0.9)', '#166534');
+                drawTextWithBackground(ctxDonut, `Perím. Ext. = ${formatNumber(perimetroExt)} cm`, 15, 40, 'rgba(220, 252, 231, 0.9)', '#166534');
+            }
+            
+            if (step >= 4) {
+                drawTextWithBackground(ctxDonut, `Área Hueco = ${formatNumber(areaInt)} cm²`, hatCanvas.width - 15, 15, 'rgba(255, 237, 213, 0.9)', '#9a3412', 'right');
+                drawTextWithBackground(ctxDonut, `Perím. Hueco = ${formatNumber(perimetroInt)} cm`, hatCanvas.width - 15, 40, 'rgba(255, 237, 213, 0.9)', '#9a3412', 'right');
+            }
+            
+            if (step >= 5) {
+                drawTextWithBackground(ctxDonut, `Área Neta Ala = ${formatNumber(areaNeta)} cm²`, hatCanvas.width / 2, hatCanvas.height - 30, 'rgba(255, 255, 255, 0.9)', '#1e3a8a', 'center', 'bold 16px Arial');
+            }
+        }
+        
+        function drawHatPart2(step) {
+            const { h1, h2, perimetroInt, areaRect, triAreaTotal } = state;
+            ctxRect.clearRect(0, 0, rectangleCanvas.width, rectangleCanvas.height);
+            
+            const canvasW = rectangleCanvas.width;
+            const canvasH = rectangleCanvas.height;
+            const padding = 40;
+
+            const totalH = h1 + h2;
+            const scaleFactor = Math.min(
+                (canvasW - padding * 2) / perimetroInt,
+                (canvasH - padding * 2) / totalH
+            );
+
+            const rectW = perimetroInt * scaleFactor;
+            const rectH = h1 * scaleFactor;
+            const triH = h2 * scaleFactor;
+            
+            const rectX = (canvasW - rectW) / 2;
+            const rectY = (canvasH - rectH + triH) / 2; 
+            
+            if (step >= 6) {
+                drawRects(rectX, rectY, rectW, rectH, perimetroInt, h1);
+            }
+            
+            if (step >= 8) {
+                const partWidth = rectW / 4;
+                for (let i = 0; i < 4; i++) {
+                    const triX = rectX + (partWidth * i);
+                    const triY = rectY; 
+                    
+                    ctxRect.beginPath();
+                    ctxRect.moveTo(triX, triY);
+                    ctxRect.lineTo(triX + partWidth, triY);
+                    ctxRect.lineTo(triX + (partWidth / 2), triY - triH);
+                    ctxRect.closePath();
+                    
+                    ctxRect.fillStyle = '#bbf7d0'; 
+                    ctxRect.fill();
+                    ctxRect.strokeStyle = '#16a34a'; 
+                    ctxRect.lineWidth = 1.5;
+                    ctxRect.stroke();
+                }
+                
+                // --- PETICIÓN 1: Etiqueta h2 (Corregida) ---
+                ctxRect.fillStyle = '#333';
+                ctxRect.font = '14px Arial';
+                ctxRect.textAlign = 'right';
+                ctxRect.textBaseline = 'middle';
+                ctxRect.fillText(`h2 = ${h2} cm`, rectX - 5, rectY - (triH / 2));
+                
+                ctxRect.strokeStyle = '#d946ef';
+                ctxRect.lineWidth = 1;
+                ctxRect.setLineDash([2, 2]);
+                ctxRect.beginPath();
+                ctxRect.moveTo(rectX, rectY - triH);
+                ctxRect.lineTo(rectX, rectY);
+                ctxRect.stroke();
+                ctxRect.setLineDash([]);
+            }
+
+            if (step >= 10) {
+                drawTextWithBackground(ctxRect, `Área Rectángulo = ${formatNumber(areaRect)} cm²`, canvasW / 2, 20, 'rgba(224, 242, 254, 0.9)', '#0c4a6e', 'center', 'bold 14px Arial');
+                drawTextWithBackground(ctxRect, `Área Triángulos = ${formatNumber(triAreaTotal)} cm²`, canvasW / 2, 45, 'rgba(220, 252, 231, 0.9)', '#166534', 'center', 'bold 14px Arial');
+            }
+        }
+
+        // Función auxiliar para dibujar solo los rectángulos
+        function drawRects(rectX, rectY, rectW, rectH, perimetroInt, h1) {
+            ctxRect.beginPath();
+            ctxRect.rect(rectX, rectY, rectW, rectH);
+            ctxRect.fillStyle = '#f9fafb';
+            ctxRect.fill();
+            ctxRect.strokeStyle = '#1e3a8a';
+            ctxRect.lineWidth = 2;
+            ctxRect.stroke();
+
+            const partWidth = rectW / 4;
+            ctxRect.strokeStyle = '#94a3b8';
+            ctxRect.lineWidth = 1;
+            
+            for (let i = 1; i < 4; i++) {
+                ctxRect.beginPath();
+                ctxRect.moveTo(rectX + partWidth * i, rectY);
+                ctxRect.lineTo(rectX + partWidth * i, rectY + rectH);
+                ctxRect.stroke();
+            }
+            
+            ctxRect.fillStyle = '#333';
+            ctxRect.font = '14px Arial';
+            ctxRect.textAlign = 'center';
+            ctxRect.textBaseline = 'middle';
+            
+            ctxRect.fillText(`Base = ${formatNumber(perimetroInt)} cm`, rectangleCanvas.width / 2, rectY + rectH + 20);
+            
+            // --- PETICIÓN 1: Etiqueta h1 (Corregida) ---
+            ctxRect.textAlign = 'right';
+            ctxRect.fillText(`h1 = ${h1} cm`, rectX - 5, rectY + (rectH / 2));
+            
+            ctxRect.strokeStyle = '#ea580c';
+            ctxRect.lineWidth = 1;
+            ctxRect.setLineDash([2, 2]);
+            ctxRect.beginPath();
+            ctxRect.moveTo(rectX, rectY);
+            ctxRect.lineTo(rectX, rectY + rectH);
+            ctxRect.stroke();
+            ctxRect.setLineDash([]);
+        }
+
+        // --- Función de Dibujo 3D (Simulación) ---
+        function drawHat3D() {
+            const { rExt, rInt, h1, h2 } = state;
+            ctx3D.clearRect(0, 0, hat3DCanvas.width, hat3DCanvas.height);
+            
+            const canvasW = hat3DCanvas.width;
+            const canvasH = hat3DCanvas.height;
+            const centerX = canvasW / 2;
+            const centerY = canvasH * 0.7; // Bajar el sombrero
+            
+            // --- Escalas (Visual, no de área) ---
+            const scale = canvasW / (rExt * 3); // Escala general ajustada
+            const rExt3D = rExt * scale;
+            const rInt3D = rInt * scale;
+            const h1_3D = h1 * scale * 1.5; // Multiplicador para que h1 se vea más
+            const h2_3D = h2 * scale * 1.5; // Multiplicador para que h2 se vea más
+            const perspective = 0.3; // Factor de elipse (perspectiva)
+            
+            // 1. Dibujar Ala (Elipse exterior e interior)
+            ctx3D.fillStyle = '#4a5568';
+            ctx3D.strokeStyle = '#2d3748';
+            ctx3D.lineWidth = 2;
+            ctx3D.beginPath();
+            ctx3D.ellipse(centerX, centerY, rExt3D, rExt3D * perspective, 0, 0, 2 * Math.PI);
+            ctx3D.fill();
+            ctx3D.stroke();
+            
+            ctx3D.fillStyle = '#e2e8f0'; // Color de fondo (hueco)
+            ctx3D.beginPath();
+            ctx3D.ellipse(centerX, centerY, rInt3D, rInt3D * perspective, 0, 0, 2 * Math.PI);
+            ctx3D.fill();
+            ctx3D.stroke();
+            
+            // 2. Dibujar Copa (Cilindro)
+            const copaY = centerY - h1_3D;
+            ctx3D.fillStyle = '#94a3b8'; // Sombra del cilindro
+            ctx3D.beginPath();
+            ctx3D.ellipse(centerX, copaY, rInt3D, rInt3D * perspective, 0, 0, 2 * Math.PI);
+            ctx3D.fill();
+            
+            ctx3D.fillRect(centerX - rInt3D, copaY, rInt3D * 2, h1_3D);
+            
+            // Base superior del cilindro (visible)
+            ctx3D.fillStyle = '#4a5568';
+            ctx3D.beginPath();
+            ctx3D.ellipse(centerX, copaY, rInt3D, rInt3D * perspective, 0, 0, 2 * Math.PI);
+            ctx3D.fill();
+            ctx3D.stroke();
+
+            // 3. Dibujar Punta (Cono)
+            const puntaY = copaY - h2_3D;
+            ctx3D.beginPath();
+            ctx3D.moveTo(centerX - rInt3D, copaY); // Izquierda
+            ctx3D.lineTo(centerX, puntaY); // Punta
+            ctx3D.lineTo(centerX + rInt3D, copaY); // Derecha
+            ctx3D.closePath(); 
+            ctx3D.fillStyle = '#4a5568';
+            ctx3D.fill();
+            ctx3D.stroke();
+
+            // 4. Etiquetas de Dimensiones
+            ctx3D.fillStyle = '#333';
+            ctx3D.font = '12px Arial';
+            ctx3D.textAlign = 'left';
+            
+            // --- PETICIÓN 3: Añadir etiquetas de radios ---
+            ctx3D.fillText(`R Ext: ${rExt}`, centerX + rExt3D + 5, centerY);
+            ctx3D.textAlign = 'right';
+            ctx3D.fillText(`R Int: ${rInt}`, centerX - rExt3D - 5, centerY);
+            
+            ctx3D.textAlign = 'left';
+            ctx3D.fillText(`h1: ${h1}`, centerX + rInt3D + 5, centerY - h1_3D / 2);
+            ctx3D.fillText(`h2: ${h2}`, centerX + rInt3D + 5, copaY - h2_3D / 2);
+        }
+
+        // --- PETICIÓN 4: Registro del Service Worker para PWA ---
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registrado con éxito:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('Fallo en el registro de ServiceWorker:', error);
+                    });
+            });
+        }
+
+    </script>
+</body>
+</html>
