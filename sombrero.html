@@ -551,8 +551,8 @@
 
             if (currentStep > 1) {
                 state.currentStep--; 
-                 if (currentStep === 12) state.currentStep = 6; 
-                else if (currentStep === 6) state.currentStep = 1; 
+                 if (currentStep === 11) state.currentStep = 6; // De 3D (12) a inicio de Copa (6)
+                else if (currentStep === 5) state.currentStep = 1; // De Copa (6) a inicio de Ala (1)
                 
                 showStep(state.currentStep);
             } else {
@@ -705,9 +705,9 @@
             const { rExt, rInt, areaExt, perimetroExt, areaInt, perimetroInt, areaNeta } = state;
             ctxDonut.clearRect(0, 0, hatCanvas.width, hatCanvas.height);
 
-            // --- CORRECCIÓN 1: Centro Y movido hacia arriba ---
+            // --- CORREGIDO: Centro Y movido hacia arriba ---
             const centerX = hatCanvas.width / 2;
-            const centerY = hatCanvas.height * 0.45; // Subido (antes 0.5)
+            const centerY = hatCanvas.height * 0.45; // Subido
             const availableHeight = hatCanvas.height - 80;
             const scaleFactor = (availableHeight / 2) / rExt; 
 
@@ -735,7 +735,7 @@
                 ctxDonut.stroke();
             }
             
-            // --- CORRECCIÓN 1: Posición de texto movida abajo ---
+            // --- CORREGIDO: Posición de texto movida abajo ---
             const textYTop1 = 15;
             const textYBottom1 = hatCanvas.height - 55; // Más abajo
             const textYBottom2 = hatCanvas.height - 30; // Más abajo
@@ -759,11 +759,11 @@
             const { h1, h2, perimetroInt, areaRect, triAreaTotal } = state;
             ctxRect.clearRect(0, 0, rectangleCanvas.width, rectangleCanvas.height);
             
-            const canvasW = rectangleCanvas.width;
-            const canvasH = rectangleCanvas.height;
-            const paddingH = 60; 
-            const paddingTop = 70; 
-            const paddingBottom = 40; 
+            const canvasW = rectangleCanvas.width; // 600
+            const canvasH = rectangleCanvas.height; // 350
+            const paddingH = 80; // Padding horizontal (para etiquetas)
+            const paddingTop = 70; // Padding superior para texto
+            const paddingBottom = 40; // Padding inferior para texto
 
             const totalH = h1 + h2;
             const scaleFactor = Math.min(
@@ -805,8 +805,8 @@
                 ctxRect.font = '14px Arial';
                 ctxRect.textAlign = 'right';
                 ctxRect.textBaseline = 'middle';
-                // --- CORRECCIÓN 1: Posición de h2 ---
-                ctxRect.fillText(`h2 = ${h2} cm`, rectX - 5, rectY - (triH / 2)); 
+                // --- CORREGIDO: Posición de la etiqueta h2 ---
+                ctxRect.fillText(`h2 = ${h2} cm`, rectX - 10, rectY - (triH / 2)); 
                 
                 ctxRect.strokeStyle = '#d946ef';
                 ctxRect.lineWidth = 1;
@@ -818,7 +818,7 @@
                 ctxRect.setLineDash([]);
             }
 
-            // --- CORRECCIÓN 1: Posición de texto movida ARRIBA ---
+            // --- CORREGIDO: Posición de texto ARRIBA ---
             const textY1 = 20;
             const textY2 = 45;
 
@@ -854,12 +854,12 @@
             ctxRect.textAlign = 'center';
             ctxRect.textBaseline = 'middle';
             
-            // --- CORRECCIÓN 1: Posición de texto Base (más abajo) ---
+            // --- CORREGIDO: Posición de texto Base (más abajo) ---
             ctxRect.fillText(`Base = ${formatNumber(perimetroInt)} cm`, rectangleCanvas.width / 2, rectY + rectH + 15);
             
-            // --- CORRECCIÓN 1: Posición de h1 a la izquierda ---
+            // --- CORREGIDO: Posición de h1 a la izquierda ---
             ctxRect.textAlign = 'right';
-            ctxRect.fillText(`h1 = ${h1} cm`, rectX - 5, rectY + (rectH / 2));
+            ctxRect.fillText(`h1 = ${h1} cm`, rectX - 10, rectY + (rectH / 2));
             
             ctxRect.strokeStyle = '#ea580c';
             ctxRect.lineWidth = 1;
@@ -884,7 +884,7 @@
             const perspective = 0.3; 
             const totalH = h1 + h2; 
 
-            // --- CORRECCIÓN: Lógica de Escala Proporcional ---
+            // --- Lógica de Escala Proporcional ---
             const scaleW = (canvasW - padding * 2) / (rExt * 2);
             const scaleH = (canvasH - padding * 2) / (totalH + (rExt * perspective)); 
             const scale = Math.min(scaleW, scaleH);
@@ -947,15 +947,14 @@
             }
 
             // 5. Etiquetas de Radios (CORREGIDAS)
-            ctx3D.fillStyle = '#FFFFFF'; // Texto blanco
+            ctx3D.fillStyle = '#FFFFFF'; // --- Texto blanco ---
             ctx3D.font = 'bold 12px Arial';
-            ctx3D.textAlign = 'left';
-            // Poner R Ext en la parte derecha del ala
-            ctx3D.fillText(`R Ext: ${rExt}`, centerX + rInt3D + (rExt3D - rInt3D) * 0.3, centerY + 5); 
+            ctx3D.textAlign = 'center'; // --- Centrado ---
             
-            ctx3D.textAlign = 'right';
-            // Poner R Int en la parte izquierda del ala
-            ctx3D.fillText(`R Int: ${rInt}`, centerX - rInt3D - (rExt3D - rInt3D) * 0.3, centerY + 5);
+            // R Ext (sobre la parte derecha del ala)
+            ctx3D.fillText(`R Ext: ${rExt}`, centerX + rExt3D * 0.7, centerY + (rExt3D * perspective * 0.1));
+            // R Int (sobre la parte izquierda del hueco)
+            ctx3D.fillText(`R Int: ${rInt}`, centerX - rInt3D * 0.5, centerY + (rInt3D * perspective * 0.1));
         }
 
         // --- Registro del Service Worker para PWA ---
