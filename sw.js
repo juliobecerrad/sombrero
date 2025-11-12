@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sombrero-cache-v1';
+const CACHE_NAME = 'sombrero-cache-v2';
 const urlsToCache = [
   './', // Esto cachea la carpeta raíz (index.html)
   './sombrero.html' // Especifica el archivo principal
@@ -26,4 +26,5 @@ self.addEventListener('fetch', event => {
       }
     )
   );
+
 });
