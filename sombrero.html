@@ -22,7 +22,7 @@
             place-items: center;
             min-height: 100vh;
             margin: 0;
-            padding: 10px;
+            padding: 5px; 
             box-sizing: border-box;
         }
 
@@ -31,7 +31,7 @@
             border-radius: 12px;
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
             width: 100%;
-            max-width: 600px;
+            max-width: 600px; 
             padding: 20px;
             box-sizing: border-box;
             overflow: hidden;
@@ -52,7 +52,7 @@
         /* --- Vistas de la App --- */
         #input-view { display: block; }
         #app-view { display: none; position: relative; }
-        #part1-view, #part2-view, #part3-view { display: none; } /* Ocultos por defecto */
+        #part1-view, #part2-view, #part3-view { display: none; }
         
         #back_button {
             position: absolute;
@@ -75,6 +75,7 @@
         #app-view h1 {
             padding-left: 40px;
             padding-right: 40px;
+            font-size: 1.5rem;
         }
         
         .input-group {
@@ -145,12 +146,13 @@
             min-height: 200px;
             background-color: #e2e8f0;
             border-radius: 8px;
-            overflow: hidden;
             position: relative;
+            overflow-x: auto; 
         }
         
         .visualization-container canvas {
             background-color: transparent;
+            flex-shrink: 0; 
         }
         
         #visualization-info {
@@ -322,7 +324,7 @@
             <div id="part2-view">
                 <h1 id="part2-title">Parte 2: Copa del Sombrero (2D)</h1>
                 <div class="visualization-container">
-                    <canvas id="rectangleCanvas" width="400" height="350"></canvas> 
+                    <canvas id="rectangleCanvas" width="600" height="350"></canvas> 
                 </div>
                 <p id="visualization-info-2">Cálculos de la Copa.</p>
                 <div id="calculation-results-2" class="results-section">
@@ -361,10 +363,11 @@
                 </div>
                 <p id="visualization-info-3">Visualización y resumen de dimensiones.</p>
                 <div id="final-summary" class="results-section">
-                    <div class="total-area">
+                    <div id="total-material-calcs-final" class="total-area" style="display: block;">
                         Área TOTAL de Material = <span id="area_total_sombrero_final"></span> cm²
                     </div>
-                    <div class="result-block" style="display: block;"> <h3>Dimensiones Clave</h3>
+                    <div class="result-block" style="display: block;">
+                        <h3>Dimensiones Clave</h3>
                         <p><strong>Radio Externo (Ala):</strong> <span id="final_rext"></span> cm</p>
                         <p><strong>Radio Interno (Cabeza):</strong> <span id="final_rint"></span> cm</p>
                         <p><strong>Altura Rectángulo (h1):</strong> <span id="final_h1"></span> cm</p>
@@ -459,7 +462,7 @@
 
         // --- Event Listeners ---
         startButton.addEventListener('click', initializeSimulation);
-        backButton.addEventListener('click', resetSimulation);
+        backButton.addEventListener('click', goBackStep); // Navegación hacia atrás
         fabNext.addEventListener('click', renderNextStep);
 
         function showError(message) {
@@ -535,12 +538,26 @@
         }
         
         function renderNextStep() {
-            if (state.currentStep === 12) { // Si está en el último paso (3D)
+            if (state.currentStep === 13) { 
                 resetSimulation();
                 return;
             }
             state.currentStep++;
             showStep(state.currentStep);
+        }
+        
+        function goBackStep() {
+            const currentStep = state.currentStep;
+
+            if (currentStep > 1) {
+                state.currentStep--; 
+                 if (currentStep === 12) state.currentStep = 6; 
+                else if (currentStep === 6) state.currentStep = 1; 
+                
+                showStep(state.currentStep);
+            } else {
+                resetSimulation();
+            }
         }
 
         function resetSimulation() {
@@ -571,20 +588,17 @@
             part2View.style.display = 'none';
             part3View.style.display = 'none';
             
-            fabNext.innerHTML = '➡️'; // Default
+            fabNext.innerHTML = '➡️'; 
 
             if (step >= 1 && step <= 5) {
-                // Estamos en la Parte 1 (Dona)
+                // Parte 1 (Dona)
                 part1View.style.display = 'block';
-                
                 drawHatPart1(step); 
                 
-                // Mostrar bloques de texto progresivamente
                 if(step >= 2) outerCircleCalcs.style.display = 'block';
                 if(step >= 4) innerCircleCalcs.style.display = 'block';
                 if(step >= 5) netAreaAla.style.display = 'block';
                 
-                // Actualizar texto de explicación
                 switch(step) {
                     case 1: visualizationInfo1.textContent = "Paso 1: Dibujamos el círculo exterior del ala."; break;
                     case 2: visualizationInfo1.textContent = "Paso 2: Calculamos el Área y Perímetro del círculo exterior."; break;
@@ -594,17 +608,14 @@
                 }
                 
             } else if (step >= 6 && step <= 11) {
-                // Estamos en la Parte 2 (Copa)
+                // Parte 2 (Copa)
                 part2View.style.display = 'block';
-                
                 drawHatPart2(step); 
                 
-                // Mostrar bloques de texto progresivamente
                 if(step >= 7) rectCalcs.style.display = 'block';
                 if(step >= 9) triangleCalcs.style.display = 'block';
                 if(step >= 11) totalMaterialCalcs.style.display = 'block';
 
-                // Actualizar texto de explicación
                 switch(step) {
                     case 6: visualizationInfo2.textContent = "Paso 6: Dibujamos la plantilla del rectángulo (h1)."; break;
                     case 7: visualizationInfo2.textContent = "Paso 7: Calculamos el área del rectángulo."; break;
@@ -613,15 +624,19 @@
                     case 10: visualizationInfo2.textContent = "Paso 10: Mostramos las áreas generales de la copa en el gráfico."; break;
                     case 11: visualizationInfo2.textContent = "Paso 11: Cálculo final! Esta es el área total del material para el sombrero."; break;
                 }
-            } else if (step === 12) {
-                // Estamos en la Parte 3 (Vista 3D)
+            } else if (step >= 12) {
+                // Parte 3 (Vista 3D)
                 part3View.style.display = 'block';
-                fabNext.innerHTML = '🎉';
+                drawHat3D(step); 
                 
-                drawHat3D();
-                finalSummary.style.display = 'block';
-                
-                visualizationInfo3.textContent = "¡Este es tu sombrero terminado en 3D!";
+                if (step === 12) {
+                    visualizationInfo3.textContent = "Paso 12: Visualizamos el ala del sombrero en 3D.";
+                    fabNext.innerHTML = '➡️';
+                } else if (step === 13) {
+                    visualizationInfo3.textContent = "Paso 13: ¡Este es tu sombrero terminado en 3D!";
+                    finalSummary.style.display = 'block';
+                    fabNext.innerHTML = '🎉';
+                }
             }
             
             fillInData();
@@ -690,9 +705,11 @@
             const { rExt, rInt, areaExt, perimetroExt, areaInt, perimetroInt, areaNeta } = state;
             ctxDonut.clearRect(0, 0, hatCanvas.width, hatCanvas.height);
 
+            // --- CORRECCIÓN 1: Centro Y movido hacia arriba ---
             const centerX = hatCanvas.width / 2;
-            const centerY = hatCanvas.height * 0.6; 
-            const scaleFactor = (hatCanvas.height * 0.3) / rExt; 
+            const centerY = hatCanvas.height * 0.45; // Subido (antes 0.5)
+            const availableHeight = hatCanvas.height - 80;
+            const scaleFactor = (availableHeight / 2) / rExt; 
 
             const scaledRExt = rExt * scaleFactor;
             const scaledRInt = rInt * scaleFactor;
@@ -717,19 +734,24 @@
                 ctxDonut.lineWidth = 1;
                 ctxDonut.stroke();
             }
+            
+            // --- CORRECCIÓN 1: Posición de texto movida abajo ---
+            const textYTop1 = 15;
+            const textYBottom1 = hatCanvas.height - 55; // Más abajo
+            const textYBottom2 = hatCanvas.height - 30; // Más abajo
 
             if (step >= 2) {
-                drawTextWithBackground(ctxDonut, `Área Ext. = ${formatNumber(areaExt)} cm²`, 15, 15, 'rgba(220, 252, 231, 0.9)', '#166534');
-                drawTextWithBackground(ctxDonut, `Perím. Ext. = ${formatNumber(perimetroExt)} cm`, 15, 40, 'rgba(220, 252, 231, 0.9)', '#166534');
+                drawTextWithBackground(ctxDonut, `Área Ext. = ${formatNumber(areaExt)} cm²`, 15, textYBottom1, 'rgba(220, 252, 231, 0.9)', '#166534');
+                drawTextWithBackground(ctxDonut, `Perím. Ext. = ${formatNumber(perimetroExt)} cm`, 15, textYBottom2, 'rgba(220, 252, 231, 0.9)', '#166534');
             }
             
             if (step >= 4) {
-                drawTextWithBackground(ctxDonut, `Área Hueco = ${formatNumber(areaInt)} cm²`, hatCanvas.width - 15, 15, 'rgba(255, 237, 213, 0.9)', '#9a3412', 'right');
-                drawTextWithBackground(ctxDonut, `Perím. Hueco = ${formatNumber(perimetroInt)} cm`, hatCanvas.width - 15, 40, 'rgba(255, 237, 213, 0.9)', '#9a3412', 'right');
+                drawTextWithBackground(ctxDonut, `Área Hueco = ${formatNumber(areaInt)} cm²`, hatCanvas.width - 15, textYBottom1, 'rgba(255, 237, 213, 0.9)', '#9a3412', 'right');
+                drawTextWithBackground(ctxDonut, `Perím. Hueco = ${formatNumber(perimetroInt)} cm`, hatCanvas.width - 15, textYBottom2, 'rgba(255, 237, 213, 0.9)', '#9a3412', 'right');
             }
             
             if (step >= 5) {
-                drawTextWithBackground(ctxDonut, `Área Neta Ala = ${formatNumber(areaNeta)} cm²`, hatCanvas.width / 2, hatCanvas.height - 30, 'rgba(255, 255, 255, 0.9)', '#1e3a8a', 'center', 'bold 16px Arial');
+                 drawTextWithBackground(ctxDonut, `Área Neta Ala = ${formatNumber(areaNeta)} cm²`, hatCanvas.width / 2, textYTop1, 'rgba(255, 255, 255, 0.9)', '#1e3a8a', 'center', 'bold 16px Arial');
             }
         }
         
@@ -739,12 +761,14 @@
             
             const canvasW = rectangleCanvas.width;
             const canvasH = rectangleCanvas.height;
-            const padding = 40;
+            const paddingH = 60; 
+            const paddingTop = 70; 
+            const paddingBottom = 40; 
 
             const totalH = h1 + h2;
             const scaleFactor = Math.min(
-                (canvasW - padding * 2) / perimetroInt,
-                (canvasH - padding * 2) / totalH
+                (canvasW - paddingH * 2) / perimetroInt,
+                (canvasH - paddingTop - paddingBottom) / (totalH + 5) 
             );
 
             const rectW = perimetroInt * scaleFactor;
@@ -752,7 +776,7 @@
             const triH = h2 * scaleFactor;
             
             const rectX = (canvasW - rectW) / 2;
-            const rectY = (canvasH - rectH + triH) / 2; 
+            const rectY = paddingTop + triH; 
             
             if (step >= 6) {
                 drawRects(rectX, rectY, rectW, rectH, perimetroInt, h1);
@@ -777,12 +801,12 @@
                     ctxRect.stroke();
                 }
                 
-                // --- PETICIÓN 1: Etiqueta h2 (Corregida) ---
                 ctxRect.fillStyle = '#333';
                 ctxRect.font = '14px Arial';
                 ctxRect.textAlign = 'right';
                 ctxRect.textBaseline = 'middle';
-                ctxRect.fillText(`h2 = ${h2} cm`, rectX - 5, rectY - (triH / 2));
+                // --- CORRECCIÓN 1: Posición de h2 ---
+                ctxRect.fillText(`h2 = ${h2} cm`, rectX - 5, rectY - (triH / 2)); 
                 
                 ctxRect.strokeStyle = '#d946ef';
                 ctxRect.lineWidth = 1;
@@ -794,9 +818,13 @@
                 ctxRect.setLineDash([]);
             }
 
+            // --- CORRECCIÓN 1: Posición de texto movida ARRIBA ---
+            const textY1 = 20;
+            const textY2 = 45;
+
             if (step >= 10) {
-                drawTextWithBackground(ctxRect, `Área Rectángulo = ${formatNumber(areaRect)} cm²`, canvasW / 2, 20, 'rgba(224, 242, 254, 0.9)', '#0c4a6e', 'center', 'bold 14px Arial');
-                drawTextWithBackground(ctxRect, `Área Triángulos = ${formatNumber(triAreaTotal)} cm²`, canvasW / 2, 45, 'rgba(220, 252, 231, 0.9)', '#166534', 'center', 'bold 14px Arial');
+                drawTextWithBackground(ctxRect, `Área Rectángulo = ${formatNumber(areaRect)} cm²`, canvasW / 2, textY1, 'rgba(224, 242, 254, 0.9)', '#0c4a6e', 'center', 'bold 14px Arial');
+                drawTextWithBackground(ctxRect, `Área Triángulos = ${formatNumber(triAreaTotal)} cm²`, canvasW / 2, textY2, 'rgba(220, 252, 231, 0.9)', '#166534', 'center', 'bold 14px Arial');
             }
         }
 
@@ -826,9 +854,10 @@
             ctxRect.textAlign = 'center';
             ctxRect.textBaseline = 'middle';
             
-            ctxRect.fillText(`Base = ${formatNumber(perimetroInt)} cm`, rectangleCanvas.width / 2, rectY + rectH + 20);
+            // --- CORRECCIÓN 1: Posición de texto Base (más abajo) ---
+            ctxRect.fillText(`Base = ${formatNumber(perimetroInt)} cm`, rectangleCanvas.width / 2, rectY + rectH + 15);
             
-            // --- PETICIÓN 1: Etiqueta h1 (Corregida) ---
+            // --- CORRECCIÓN 1: Posición de h1 a la izquierda ---
             ctxRect.textAlign = 'right';
             ctxRect.fillText(`h1 = ${h1} cm`, rectX - 5, rectY + (rectH / 2));
             
@@ -842,25 +871,32 @@
             ctxRect.setLineDash([]);
         }
 
-        // --- Función de Dibujo 3D (Simulación) ---
-        function drawHat3D() {
+        // --- Función de Dibujo 3D (Simulación) Actualizada ---
+        function drawHat3D(step) {
             const { rExt, rInt, h1, h2 } = state;
             ctx3D.clearRect(0, 0, hat3DCanvas.width, hat3DCanvas.height);
             
             const canvasW = hat3DCanvas.width;
             const canvasH = hat3DCanvas.height;
             const centerX = canvasW / 2;
-            const centerY = canvasH * 0.7; // Bajar el sombrero
+            const padding = 40; 
             
-            // --- Escalas (Visual, no de área) ---
-            const scale = canvasW / (rExt * 3); // Escala general ajustada
+            const perspective = 0.3; 
+            const totalH = h1 + h2; 
+
+            // --- CORRECCIÓN: Lógica de Escala Proporcional ---
+            const scaleW = (canvasW - padding * 2) / (rExt * 2);
+            const scaleH = (canvasH - padding * 2) / (totalH + (rExt * perspective)); 
+            const scale = Math.min(scaleW, scaleH);
+            
             const rExt3D = rExt * scale;
             const rInt3D = rInt * scale;
-            const h1_3D = h1 * scale * 1.5; // Multiplicador para que h1 se vea más
-            const h2_3D = h2 * scale * 1.5; // Multiplicador para que h2 se vea más
-            const perspective = 0.3; // Factor de elipse (perspectiva)
+            const h1_3D = h1 * scale; 
+            const h2_3D = h2 * scale; 
             
-            // 1. Dibujar Ala (Elipse exterior e interior)
+            const centerY = canvasH - padding - (rExt3D * perspective); 
+            
+            // 1. Dibujar Ala (Siempre)
             ctx3D.fillStyle = '#4a5568';
             ctx3D.strokeStyle = '#2d3748';
             ctx3D.lineWidth = 2;
@@ -869,55 +905,60 @@
             ctx3D.fill();
             ctx3D.stroke();
             
-            ctx3D.fillStyle = '#e2e8f0'; // Color de fondo (hueco)
+            ctx3D.fillStyle = '#e2e8f0'; 
             ctx3D.beginPath();
             ctx3D.ellipse(centerX, centerY, rInt3D, rInt3D * perspective, 0, 0, 2 * Math.PI);
             ctx3D.fill();
             ctx3D.stroke();
             
-            // 2. Dibujar Copa (Cilindro)
-            const copaY = centerY - h1_3D;
-            ctx3D.fillStyle = '#94a3b8'; // Sombra del cilindro
-            ctx3D.beginPath();
-            ctx3D.ellipse(centerX, copaY, rInt3D, rInt3D * perspective, 0, 0, 2 * Math.PI);
-            ctx3D.fill();
-            
-            ctx3D.fillRect(centerX - rInt3D, copaY, rInt3D * 2, h1_3D);
-            
-            // Base superior del cilindro (visible)
-            ctx3D.fillStyle = '#4a5568';
-            ctx3D.beginPath();
-            ctx3D.ellipse(centerX, copaY, rInt3D, rInt3D * perspective, 0, 0, 2 * Math.PI);
-            ctx3D.fill();
-            ctx3D.stroke();
+            // 2. Dibujar Copa y Cono (Solo en el último paso)
+            if (step === 13) {
+                const copaY = centerY - h1_3D;
+                ctx3D.fillStyle = '#94a3b8'; 
+                ctx3D.beginPath();
+                ctx3D.ellipse(centerX, copaY, rInt3D, rInt3D * perspective, 0, 0, 2 * Math.PI);
+                ctx3D.fill();
+                
+                ctx3D.fillRect(centerX - rInt3D, copaY, rInt3D * 2, h1_3D);
+                
+                ctx3D.fillStyle = '#4a5568'; 
+                ctx3D.beginPath();
+                ctx3D.ellipse(centerX, copaY, rInt3D, rInt3D * perspective, 0, 0, 2 * Math.PI);
+                ctx3D.fill();
+                ctx3D.stroke();
 
-            // 3. Dibujar Punta (Cono)
-            const puntaY = copaY - h2_3D;
-            ctx3D.beginPath();
-            ctx3D.moveTo(centerX - rInt3D, copaY); // Izquierda
-            ctx3D.lineTo(centerX, puntaY); // Punta
-            ctx3D.lineTo(centerX + rInt3D, copaY); // Derecha
-            ctx3D.closePath(); 
-            ctx3D.fillStyle = '#4a5568';
-            ctx3D.fill();
-            ctx3D.stroke();
+                // 3. Dibujar Punta (Cono)
+                const puntaY = copaY - h2_3D;
+                ctx3D.beginPath();
+                ctx3D.moveTo(centerX - rInt3D, copaY); 
+                ctx3D.lineTo(centerX, puntaY); 
+                ctx3D.lineTo(centerX + rInt3D, copaY); 
+                ctx3D.closePath(); 
+                ctx3D.fillStyle = '#4a5568';
+                ctx3D.fill();
+                ctx3D.stroke();
 
-            // 4. Etiquetas de Dimensiones
-            ctx3D.fillStyle = '#333';
-            ctx3D.font = '12px Arial';
+                // 4. Etiquetas de Altura
+                ctx3D.fillStyle = '#333';
+                ctx3D.font = '12px Arial';
+                ctx3D.textAlign = 'left';
+                ctx3D.fillText(`h1: ${h1}`, centerX + rInt3D + 5, centerY - h1_3D / 2);
+                ctx3D.fillText(`h2: ${h2}`, centerX + rInt3D + 5, copaY - h2_3D / 2);
+            }
+
+            // 5. Etiquetas de Radios (CORREGIDAS)
+            ctx3D.fillStyle = '#FFFFFF'; // Texto blanco
+            ctx3D.font = 'bold 12px Arial';
             ctx3D.textAlign = 'left';
+            // Poner R Ext en la parte derecha del ala
+            ctx3D.fillText(`R Ext: ${rExt}`, centerX + rInt3D + (rExt3D - rInt3D) * 0.3, centerY + 5); 
             
-            // --- PETICIÓN 3: Añadir etiquetas de radios ---
-            ctx3D.fillText(`R Ext: ${rExt}`, centerX + rExt3D + 5, centerY);
             ctx3D.textAlign = 'right';
-            ctx3D.fillText(`R Int: ${rInt}`, centerX - rExt3D - 5, centerY);
-            
-            ctx3D.textAlign = 'left';
-            ctx3D.fillText(`h1: ${h1}`, centerX + rInt3D + 5, centerY - h1_3D / 2);
-            ctx3D.fillText(`h2: ${h2}`, centerX + rInt3D + 5, copaY - h2_3D / 2);
+            // Poner R Int en la parte izquierda del ala
+            ctx3D.fillText(`R Int: ${rInt}`, centerX - rInt3D - (rExt3D - rInt3D) * 0.3, centerY + 5);
         }
 
-        // --- PETICIÓN 4: Registro del Service Worker para PWA ---
+        // --- Registro del Service Worker para PWA ---
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js')
